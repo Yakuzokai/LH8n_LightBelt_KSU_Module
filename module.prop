@@ -1,0 +1,7 @@
+id=lh8n_lightbelt
+name=Tecno LH8n LightBelt Backlight Service
+version=v1.0-final
+versionCode=100
+author=Kagiyama
+description=Native Tecno LH8n AW22xxx Backlight LED controller app with thermal protection and background service for HyperOS.
+
