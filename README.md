@@ -147,9 +147,9 @@ No build toolchain is required: the APK is already included. To package the modu
 - **1:1 Frame-Accurate Notification Preview Sync**:
   - Re-synchronized the notification preview loop cadence from 1400ms to **2867 ms** (`0xb33`), precisely matching the 172-frame / 60 fps duration of the stock Lottie preview assets (`animation_startriver`, `animation_lightning`, `animation_pureness`, `animation_rise`, `animation_halo`).
   - Physical LED double-flash pulses now lock into permanent frame-level synchrony with the on-screen animation without drifting.
-- **Dynamic Racing Animation Upgrade**:
+- **Dynamic Racing Animation Upgrade & Continuous Loop Engine**:
   - Re-mapped the `"Racing"` preset (`command_speed`) from frozen static cyan microcode (`00 30 01 00 00 00` / `lamp1_static_game_02.bin`) to the native dynamic racing animation (`00 31 02 00 00 00` / `lamp1_game_PUBG_03_drive.bin`).
-  - The physical backlight now displays high-speed dynamic sweeping waves instead of a motionless cyan glow.
+  - Added an automated software repeating engine (`Utils.getPreviewLoopDelay` at **5000 ms** / `0x1388`) perfectly synchronized with the 300-frame @ 60fps duration of `game.json`. Racing sweeps continuously without shutting off after the first cycle, while continuous hardware microcodes (Soft, Dreamy, Breathe, Party) loop naturally without software interrupts.
 - **Sysfs Directory Traversal Hardening**:
   - Enforced strict `0755` permissions on `/sys/devices/platform/11d21000.i2c/i2c-2/2-006a` and applied `chown -R system:system` across all boot scripts to prevent permission denial bugs for the `system` user.
 
