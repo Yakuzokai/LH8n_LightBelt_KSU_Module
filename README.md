@@ -23,7 +23,7 @@ The repository contains a prebuilt APK and shell scripts; it does not contain th
 ## App and module details
 
 - **Module ID:** `lh8n_lightbelt`
-- **Module version:** `v1.0-final` (version code `100`)
+- **Module version:** `1.2.0` (version code `120`)
 - **App package:** `com.transsion.lightbelt`
 - **App label:** Backlight Effect
 - **APK version:** `14` (version code `34`)
@@ -135,6 +135,23 @@ Missing paths are ignored by the permission scripts. Check the paths on your own
 ## Building a module ZIP
 
 No build toolchain is required: the APK is already included. To package the module, zip the repository contents while preserving the directory structure and placing `module.prop` at the ZIP root. Do not put the project folder itself as the only top-level entry. Keep executable bits on `customize.sh`, `service.sh`, `post-fs-data.sh`, and `action.sh` when the packaging tool supports Unix permissions; the installer explicitly sets executable permissions for `service.sh` and `action.sh`.
+
+## Known Issues / Bugs
+
+- **LED Color Customization Not Working on Hardware Effects**:
+  Custom LED color selection in the app's settings (`CustomEffectActivity`) currently does not change the physical backlight LED color for certain effects (such as Charging / Dynamic Flow, Party, Breathing Pulse). This happens because the AW22xxx controller's `.bin` microcode firmware sequences load hardcoded PWM color palettes directly into chip SRAM, overriding userspace RGB register writes.
+
+## Release Notes (v1.2.0)
+
+### What's New
+- **Zero-Delay Command Execution**: Eliminated the artificial 100ms UI debounce, redundant 20ms wake sleep cycles, and 256-read I2C `/reg` sysfs dumps. Command latency reduced from ~170ms down to 3ms.
+- **Cold Boot Recovery**: Added automated hardware register awakening in `service.sh` and userspace self-healing (`brightness=180` boot trigger) to permanently fix LEDs failing to illuminate after reboot.
+- **Synchronized Notification Double-Flash**: Retuned notification preview loop cadence to 1400ms to match the on-screen Lottie animation.
+- **Configurable Backlight Durations**:
+  - **Charging Light**: Always (Continuous), 15s, 30s, 1m, 5m, 10m.
+  - **Low Battery Alert**: 5s, 15s, 30s, 1m, 5m, Always (Continuous).
+- **Home UI Duration Summaries & Quick Picker**: Subtitles dynamically reflect `Style • Color • Duration`, and long-pressing either row directly in `HomeActivity` opens a quick-selection dialog.
+- **Notification Palette Alignment**: Corrected color values to match stock Lottie assets (Halo pure white `#ffffff`, Starburst azure `#3f8dff`, Pure emerald `#009e2b`).
 
 ## Project scope
 
