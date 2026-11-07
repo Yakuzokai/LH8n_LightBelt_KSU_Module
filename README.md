@@ -23,7 +23,7 @@ The repository contains a prebuilt APK and shell scripts; it does not contain th
 ## App and module details
 
 - **Module ID:** `lh8n_lightbelt`
-- **Module version:** `1.2.0` (version code `120`)
+- **Module version:** `1.2.1` (version code `121`)
 - **App package:** `com.transsion.lightbelt`
 - **App label:** Backlight Effect
 - **APK version:** `14` (version code `34`)
@@ -141,12 +141,23 @@ No build toolchain is required: the APK is already included. To package the modu
 - **Low Battery Warning LED Color Customization Not Working**:
   In the Low Battery Warning customization screen (`CustomEffectActivity`), selecting a custom LED color does not alter the physical backlight color. The low battery warning effect triggers hardware microcode command `00 30 01 00 00 00` (`lamp1_static_game_02.bin`), which executes hardcoded PWM color palettes directly from the AW22127 controller's on-chip SRAM, ignoring userspace RGB settings.
 
+## Release Notes (v1.2.1)
+
+### What's New
+- **1:1 Frame-Accurate Notification Preview Sync**:
+  - Re-synchronized the notification preview loop cadence from 1400ms to **2867 ms** (`0xb33`), precisely matching the 172-frame / 60 fps duration of the stock Lottie preview assets (`animation_startriver`, `animation_lightning`, `animation_pureness`, `animation_rise`, `animation_halo`).
+  - Physical LED double-flash pulses now lock into permanent frame-level synchrony with the on-screen animation without drifting.
+- **Dynamic Racing Animation Upgrade**:
+  - Re-mapped the `"Racing"` preset (`command_speed`) from frozen static cyan microcode (`00 30 01 00 00 00` / `lamp1_static_game_02.bin`) to the native dynamic racing animation (`00 31 02 00 00 00` / `lamp1_game_PUBG_03_drive.bin`).
+  - The physical backlight now displays high-speed dynamic sweeping waves instead of a motionless cyan glow.
+- **Sysfs Directory Traversal Hardening**:
+  - Enforced strict `0755` permissions on `/sys/devices/platform/11d21000.i2c/i2c-2/2-006a` and applied `chown -R system:system` across all boot scripts to prevent permission denial bugs for the `system` user.
+
 ## Release Notes (v1.2.0)
 
 ### What's New
 - **Zero-Delay Command Execution**: Eliminated the artificial 100ms UI debounce, redundant 20ms wake sleep cycles, and 256-read I2C `/reg` sysfs dumps. Command latency reduced from ~170ms down to 3ms.
 - **Cold Boot Recovery**: Added automated hardware register awakening in `service.sh` and userspace self-healing (`brightness=180` boot trigger) to permanently fix LEDs failing to illuminate after reboot.
-- **Synchronized Notification Double-Flash**: Retuned notification preview loop cadence to 1400ms to match the on-screen Lottie animation.
 - **Configurable Backlight Durations**:
   - **Charging Light**: Always (Continuous), 15s, 30s, 1m, 5m, 10m.
   - **Low Battery Alert**: 5s, 15s, 30s, 1m, 5m, Always (Continuous).
