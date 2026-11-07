@@ -138,12 +138,19 @@ No build toolchain is required: the APK is already included. To package the modu
 
 ## Known Issues / Bugs
 
-- **Low Battery Warning LED Color Customization Not Working**:
-  In the Low Battery Warning customization screen (`CustomEffectActivity`), selecting a custom LED color does not alter the physical backlight color. The low battery warning effect triggers hardware microcode command `00 30 01 00 00 00` (`lamp1_static_game_02.bin`), which executes hardcoded PWM color palettes directly from the AW22127 controller's on-chip SRAM, ignoring userspace RGB settings.
+- None currently known. (Previous Low Battery color mismatch resolved by redesigning customization screens with 14 full-palette hardware animation presets and removing non-functional userspace RGB overrides).
 
 ## Release Notes (v1.2.1)
 
 ### What's New
+- **Full 14-Effect Palette for Charging & Low Battery**:
+  - Expanded both Charging Light Effect and Low Battery Warning to support all 14 native animation effects: Dynamic Flow 1 & 2, Racing (Speed), Warning Blink, Soft Wave, Dreamy Illusion, Breathing Pulse, Party Rhythm, Pure Flash, Starburst, Halo, Lightning, Sunrise, and Solid Glow.
+- **Built-in On-Screen Lottie Light Preview**:
+  - Replaced the standalone preview button with a native in-app preview container at the top of the screen (`back_light_bg` phone graphic + real-time looping `LottieAnimationView`), perfectly mimicking the stock app experience.
+  - Selecting any preset updates the on-screen Lottie preview and immediately plays the physical hardware LED in synchronized real time.
+- **Color Selection Cleanup**:
+  - Removed all ineffective LED color picker cards and radio buttons across Charging and Low Battery menus.
+  - Streamlined Home UI summaries to `Style • Duration` (e.g. `Dynamic Flow 1 • Always`, `Warning Blink • 5 Seconds`).
 - **1:1 Frame-Accurate Notification Preview Sync**:
   - Re-synchronized the notification preview loop cadence from 1400ms to **2867 ms** (`0xb33`), precisely matching the 172-frame / 60 fps duration of the stock Lottie preview assets (`animation_startriver`, `animation_lightning`, `animation_pureness`, `animation_rise`, `animation_halo`).
   - Physical LED double-flash pulses now lock into permanent frame-level synchrony with the on-screen animation without drifting.
