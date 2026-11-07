@@ -138,8 +138,8 @@ No build toolchain is required: the APK is already included. To package the modu
 
 ## Known Issues / Bugs
 
-- **LED Color Customization Not Working on Hardware Effects**:
-  Custom LED color selection in the app's settings (`CustomEffectActivity`) currently does not change the physical backlight LED color for certain effects (such as Charging / Dynamic Flow, Party, Breathing Pulse). This happens because the AW22xxx controller's `.bin` microcode firmware sequences load hardcoded PWM color palettes directly into chip SRAM, overriding userspace RGB register writes.
+- **Low Battery Warning LED Color Customization Not Working**:
+  In the Low Battery Warning customization screen (`CustomEffectActivity`), selecting a custom LED color does not alter the physical backlight color. The low battery warning effect triggers hardware microcode command `00 30 01 00 00 00` (`lamp1_static_game_02.bin`), which executes hardcoded PWM color palettes directly from the AW22127 controller's on-chip SRAM, ignoring userspace RGB settings.
 
 ## Release Notes (v1.2.0)
 
