@@ -9,8 +9,7 @@ echo 4 > /sys/class/leds/aw22xxx_led/cfg
 
 sleep 3
 
-echo 9 > /sys/class/leds/aw22xxx_led/cfg
-echo 0 > /sys/class/leds/aw22xxx_led/hwen
+echo '00 01 00 00 00 00' > /sys/led/led/tran_led_cmd
 
 echo "=== Backlight Test Completed Successfully! ==="
 
