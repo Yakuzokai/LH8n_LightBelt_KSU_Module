@@ -52,15 +52,19 @@ chcon u:object_r:shell_data_file:s0 "$CMD_FILE"
 STARTUP_CMD=""
 [ -f "/data/local/tmp/lh8n_startup_cmd" ] && STARTUP_CMD=$(cat /data/local/tmp/lh8n_startup_cmd 2>/dev/null)
 
-if [ -z "$STARTUP_CMD" ]; then
+if [ -z "$STARTUP_CMD" ] || [ "$STARTUP_CMD" = "null" ]; then
+    STARTUP_CMD=$(settings get global tran_led_startup_cmd 2>/dev/null)
+fi
+
+if [ -z "$STARTUP_CMD" ] || [ "$STARTUP_CMD" = "null" ]; then
     STARTUP_VAL=$(settings get global tran_led_startup_settings 2>/dev/null)
     case "$STARTUP_VAL" in
-        0) STARTUP_CMD="00 01 00 00 00 00" ;; # 0: None
-        1) STARTUP_CMD="00 03 01 00 00 00" ;; # 1: Dreamy Illusion
-        2) STARTUP_CMD="00 31 02 00 00 00" ;; # 2: Racing / Speed
-        3) STARTUP_CMD="00 04 00 00 00 00" ;; # 3: Soft Wave
-        4) STARTUP_CMD="00 20 02 00 00 00" ;; # 4: Breathing Pulse
-        5) STARTUP_CMD="00 20 03 00 00 00" ;; # 5: Party Rhythm
+        0) STARTUP_CMD="00 03 01 00 00 00" ;; # 0: Dreamy Illusion
+        1) STARTUP_CMD="00 31 02 00 00 00" ;; # 1: Racing / Speed
+        2) STARTUP_CMD="00 04 00 00 00 00" ;; # 2: Soft Wave
+        3) STARTUP_CMD="00 20 02 00 00 00" ;; # 3: Breathing Pulse
+        4) STARTUP_CMD="00 20 03 00 00 00" ;; # 4: Party Rhythm
+        5) STARTUP_CMD="00 01 00 00 00 00" ;; # 5: None / Disabled
         *) STARTUP_CMD="00 04 00 00 00 00" ;; # Default Soft Wave for LH8n
     esac
 fi
@@ -246,15 +250,20 @@ while true; do
         chmod 0666 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/tran_led_cmd 2>/dev/null
 
         # Sync startup and power settings to cache files for next cold boot
-        S_CUR=$(settings get global tran_led_startup_settings 2>/dev/null)
-        case "$S_CUR" in
-            0) echo "00 01 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-            1) echo "00 03 01 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-            2) echo "00 31 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-            3) echo "00 04 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-            4) echo "00 20 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-            5) echo "00 20 03 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-        esac
+        S_CMD=$(settings get global tran_led_startup_cmd 2>/dev/null)
+        if [ -n "$S_CMD" ] && [ "$S_CMD" != "null" ]; then
+            echo "$S_CMD" > /data/local/tmp/lh8n_startup_cmd
+        else
+            S_CUR=$(settings get global tran_led_startup_settings 2>/dev/null)
+            case "$S_CUR" in
+                0) echo "00 03 01 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+                1) echo "00 31 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+                2) echo "00 04 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+                3) echo "00 20 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+                4) echo "00 20 03 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+                5) echo "00 01 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+            esac
+        fi
         chmod 0666 /data/local/tmp/lh8n_startup_cmd 2>/dev/null
 
         IMAX_CUR=$(settings get global tran_led_imax 2>/dev/null)
