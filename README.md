@@ -12,8 +12,9 @@ The repository contains a prebuilt APK and shell scripts; it does not contain th
 | --- | --- |
 | `module.prop` | Root-module ID, display name, version, author, and description. |
 | `system/priv-app/LightBelt/LightBelt.apk` | Prebuilt Backlight Effect app, placed in a systemless privileged-app overlay. |
+| `01_lh8n_sysfs.sh` | Early-boot daemon executed during class main. Powers on the AW22127 controller, reads cached startup animation parameters (`/data/local/tmp/lh8n_*`), plays the startup backlight during the Android boot animation, and transitions to charging/standby upon boot completion. |
 | `customize.sh` | Installer hook. Sets file permissions, attempts an APK package-manager install, sets permissions on known LED sysfs paths, and attempts to enable the app's notification listener. |
-| `service.sh` | Waits until Android reports boot complete, then reapplies LED-node permissions and notification-listener access. |
+| `service.sh` | Waits until Android reports boot complete, verifies that `01_lh8n_sysfs.sh` is active, and reapplies LED-node permissions and notification-listener access. |
 | `post-fs-data.sh` | Early-boot hook that currently sets SELinux to permissive mode. |
 | `action.sh` | KernelSU Next action script that runs a short LED test sequence. |
 | `META-INF/com/google/android/update-binary` | Minimal recovery installer that extracts the module files under `/data/adb/modules/lh8n_lightbelt` and invokes `customize.sh`. |
@@ -143,6 +144,11 @@ No build toolchain is required: the APK is already included. To package the modu
 ## Release Notes (v1.2.1)
 
 ### What's New
+- **Early-Boot Startup Backlight Animation Engine**:
+  - Fixed startup backlight failing to illuminate during device boot on HyperOS 3.0 / AOSP custom ROMs (where stock HiOS framework services are absent).
+  - Implemented standalone early-boot service in `01_lh8n_sysfs.sh` reading cached startup microcode (`/data/local/tmp/lh8n_startup_cmd`), current limit (`/data/local/tmp/lh8n_imax`), and master switch (`/data/local/tmp/lh8n_master`).
+  - Initiates the chosen backlight effect at early boot ($t \approx 31\text{s}$ during Android bootanimation), waits for `sys.boot_completed == 1`, holds for 4 seconds, and seamlessly transitions to charging animation or standby.
+  - Cleaned up `service.sh` by removing conflicting daemon kill signals and premature standby commands, ensuring seamless handoff to the live background service.
 - **Full 14-Effect Palette for Charging & Low Battery**:
   - Expanded both Charging Light Effect and Low Battery Warning to support all 14 native animation effects: Dynamic Flow 1 & 2, Racing (Speed), Warning Blink, Soft Wave, Dreamy Illusion, Breathing Pulse, Party Rhythm, Pure Flash, Starburst, Halo, Lightning, Sunrise, and Solid Glow.
 - **Built-in On-Screen Lottie Light Preview**:
