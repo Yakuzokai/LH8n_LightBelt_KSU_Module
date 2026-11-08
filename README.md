@@ -24,7 +24,7 @@ The repository contains a prebuilt APK and shell scripts; it does not contain th
 ## App and module details
 
 - **Module ID:** `lh8n_lightbelt`
-- **Module version:** `1.2.1` (version code `121`)
+- **Module version:** `1.2.2` (version code `122`)
 - **App package:** `com.transsion.lightbelt`
 - **App label:** Backlight Effect
 - **APK version:** `14` (version code `34`)
@@ -140,6 +140,18 @@ No build toolchain is required: the APK is already included. To package the modu
 ## Known Issues / Bugs
 
 - None currently known. (Previous Low Battery color mismatch resolved by redesigning customization screens with 14 full-palette hardware animation presets and removing non-functional userspace RGB overrides).
+
+## Release Notes (v1.2.2)
+
+### What's New
+- **Startup Backlight Customizer with Dedicated SAVE Buttons**:
+  - Added prominent, highly visible **SAVE** buttons (top-bar pill `#007AFF` and bottom full-width button) in `CustomEffectActivity` for Startup Backlight, Charging, and Low Battery.
+  - Tapping SAVE immediately persists user choices, synchronizes early-boot cache files (`/data/local/tmp/lh8n_startup_cmd`, `/data/local/tmp/lh8n_imax`, `/data/local/tmp/lh8n_master`), displays toast confirmation (`✓ <Preset> saved!`), and cleanly exits to `HomeActivity`.
+- **Permanent Fix for Boot Backlight Failing After Changing Settings**:
+  - Identified root cause in stock `SelectTypeActivity` where button tags were scrambled (e.g. Racing button was tagged with index `0`, Dreamy with `5`, and None/Off with `4`). Storing index `0` caused early boot to treat it as "Turn Off / None", disabling the backlight during reboot!
+  - Replaced ambiguous integer indices with raw microcode hex strings stored in `tran_led_startup_cmd` (e.g., `00 31 02 00 00 00` for Racing).
+  - Wired `HomeActivity`'s Startup item directly into `CustomEffectActivity(type="startup")`, providing all 14 preset options, real-time Lottie previews, hardware brightness slider, and live dynamic subtitle updates on the Home screen.
+  - Corrected legacy integer fallback mapping in `01_lh8n_sysfs.sh`: `0` = Dreamy Illusion, `1` = Racing, `2` = Soft Wave, `3` = Breathing Pulse, `4` = Party Rhythm, `5` = None/Off.
 
 ## Release Notes (v1.2.1)
 
