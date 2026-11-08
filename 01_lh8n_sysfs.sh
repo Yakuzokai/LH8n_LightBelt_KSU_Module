@@ -3,6 +3,25 @@
 # Ensure SELinux permissive
 setenforce 0 2>/dev/null
 
+# Ensure directory traversal permissions are always 0755
+chmod 0755 /sys 2>/dev/null
+chmod 0755 /sys/class 2>/dev/null
+chmod 0755 /sys/class/leds 2>/dev/null
+chmod 0755 /sys/devices 2>/dev/null
+chmod 0755 /sys/devices/platform 2>/dev/null
+chmod 0755 /sys/devices/platform/11d21000.i2c 2>/dev/null
+chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2 2>/dev/null
+chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null
+chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds 2>/dev/null
+chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led 2>/dev/null
+chmod 0755 /sys/devices/platform/mtk_leds 2>/dev/null
+chmod 0755 /sys/devices/platform/mtk_leds/leds 2>/dev/null
+chmod 0755 /sys/devices/platform/mtk_leds/leds/lcd-backlight 2>/dev/null
+
+find /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/ -type d -exec chmod 0755 {} + 2>/dev/null
+find /sys/devices/platform/mtk_leds/ -type d -exec chmod 0755 {} + 2>/dev/null
+find /sys/class/leds/ -type d -exec chmod 0755 {} + 2>/dev/null
+
 # Set sysfs permissions and SELinux contexts
 chmod 0666 /sys/devices/platform/charger/bypass_charger 2>/dev/null
 chmod 0666 /sys/devices/platform/charger/tran_aichg_disable_charger 2>/dev/null
@@ -13,7 +32,9 @@ chmod 0666 /sys/class/leds/aw22xxx_led/effect 2>/dev/null
 chmod 0666 /sys/class/leds/aw22xxx_led/cfg 2>/dev/null
 chmod 0666 /sys/class/leds/aw22xxx_led/hwen 2>/dev/null
 chmod 0666 /sys/class/leds/aw22xxx_led/imax 2>/dev/null
-chmod 0666 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/* 2>/dev/null
+chmod 0666 /sys/class/leds/lcd-backlight/brightness 2>/dev/null
+chmod 0666 /sys/devices/platform/mtk_leds/leds/lcd-backlight/brightness 2>/dev/null
+find /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/ -type f -exec chmod 0666 {} + 2>/dev/null
 
 chcon u:object_r:sysfs:s0 /sys/devices/platform/charger/bypass_charger 2>/dev/null
 chcon u:object_r:sysfs:s0 /sys/devices/platform/charger/tran_aichg_disable_charger 2>/dev/null
@@ -137,8 +158,18 @@ while true; do
         esac
     fi
 
-    # 4. Refresh rate synchronization
+    # 4. Refresh rate synchronization and periodic sysfs permission watchdog
     TICK_COUNT=$((TICK_COUNT + 1))
+    if [ "$((TICK_COUNT % 5))" -eq 0 ]; then
+        chmod 0755 /sys/class/leds 2>/dev/null
+        chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null
+        chmod 0755 /sys/devices/platform/mtk_leds/leds/lcd-backlight 2>/dev/null
+        chmod 0666 /sys/class/leds/lcd-backlight/brightness 2>/dev/null
+        chmod 0666 /sys/devices/platform/mtk_leds/leds/lcd-backlight/brightness 2>/dev/null
+        chmod 0666 /sys/led/led/tran_led_cmd 2>/dev/null
+        chmod 0666 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/tran_led_cmd 2>/dev/null
+    fi
+
     if [ "$TICK_COUNT" -ge 2 ]; then
         TICK_COUNT=0
         SMART=$(settings get system is_smart_fps 2>/dev/null)
