@@ -36,15 +36,8 @@ echo "00 00 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
 sleep 0.05
 echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
 
-# Launch native daemon if available
-if [ -x /vendor/bin/lh8n_helper ]; then
-    killall -9 lh8n_helper 2>/dev/null
-    /vendor/bin/lh8n_helper >/dev/null 2>&1 &
-elif [ -f /data/local/tmp/lh8n_helper ]; then
-    chmod 755 /data/local/tmp/lh8n_helpe
-    killall -9 lh8n_helper 2>/dev/null
-    /data/local/tmp/lh8n_helper >/dev/null 2>&1 &
-fi
+# Ensure native helper never runs (prevents thermal watchdog from cutting hwen power)
+killall -9 lh8n_helper 2>/dev/null
 
 LAST_RR=""
 LAST_SMART=""
