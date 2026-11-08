@@ -11,14 +11,25 @@ if [ -f "$MODDIR/01_lh8n_sysfs.sh" ]; then
     if ! mount | grep -q "/vendor/bin/01_lh8n_sysfs.sh"; then
         mount --bind "$MODDIR/01_lh8n_sysfs.sh" /vendor/bin/01_lh8n_sysfs.sh 2>/dev/null || true
     fi
-    killall -9 01_lh8n_sysfs.sh 2>/dev/null || true
+    # If 01_lh8n_sysfs daemon is not running, start it in background
+    if ! ps -A | grep -q "01_lh8n_sysfs.sh"; then
+        sh /vendor/bin/01_lh8n_sysfs.sh &
+    fi
 fi
 
 # Ensure directory traversal permissions are always 0755
+chmod 0755 /sys 2>/dev/null || true
+chmod 0755 /sys/class 2>/dev/null || true
 chmod 0755 /sys/class/leds 2>/dev/null || true
+chmod 0755 /sys/devices 2>/dev/null || true
+chmod 0755 /sys/devices/platform 2>/dev/null || true
+chmod 0755 /sys/devices/platform/11d21000.i2c 2>/dev/null || true
+chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2 2>/dev/null || true
 chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null || true
 chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds 2>/dev/null || true
 chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led 2>/dev/null || true
+chmod 0755 /sys/devices/platform/mtk_leds 2>/dev/null || true
+chmod 0755 /sys/devices/platform/mtk_leds/leds 2>/dev/null || true
 chmod 0755 /sys/devices/platform/mtk_leds/leds/lcd-backlight 2>/dev/null || true
 
 # Ensure file nodes are accessible to system user
@@ -32,10 +43,5 @@ chown -R system:system /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/nu
 # Auto-grant notification listener if not already granted
 cmd notification allow_listener com.transsion.lightbelt/com.transsion.lightbelt.service.LBBackgroundService 2>/dev/null || true
 
-# Initialize AW22xxx hardware registers and output drivers
-echo 1 > /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/hwen 2>/dev/null || true
-echo 8 > /sys/class/leds/aw22xxx_led/imax 2>/dev/null || true
-echo 180 > /sys/class/leds/aw22xxx_led/brightness 2>/dev/null || true
-echo "00 00 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null || true
-sleep 0.05
-echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null || true
+# Start LBBackgroundService to manage active LED states
+am start-service com.transsion.lightbelt/com.transsion.lightbelt.service.LBBackgroundService 2>/dev/null || true
