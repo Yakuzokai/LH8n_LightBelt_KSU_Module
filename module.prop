@@ -3,4 +3,4 @@ name=Tecno LH8n LightBelt Backlight Service
 version=1.2.1
 versionCode=121
 author=Kagiyama
-description=Native Tecno LH8n AW22xxx Backlight LED controller app with zero-delay dispatch, configurable charging/low-battery duration, and boot self-healing for HyperOS.
+description=Native Tecno LH8n AW22xxx Backlight LED controller app with zero-delay dispatch, configurable charging/fully-charged/low-battery effects, and boot self-healing for HyperOS.
