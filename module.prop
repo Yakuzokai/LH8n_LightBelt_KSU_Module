@@ -1,6 +1,6 @@
 id=lh8n_lightbelt
 name=Tecno LH8n LightBelt Backlight Service
-version=1.2.2
-versionCode=122
+version=1.2.3
+versionCode=123
 author=Kagiyama
-description=Native Tecno LH8n AW22xxx Backlight LED controller app with HyperOS 3.0 dark card UI overhaul, Startup Backlight customizer with dedicated SAVE buttons & early-boot cache sync, live AW22127 hardware brightness slider, zero-delay dispatch, configurable charging/fully-charged/low-battery/startup effects, and hardware restart recovery.
+description=Native Tecno LH8n AW22xxx Backlight LED controller app with HyperOS 3.0 dark card UI, floating live LED preview deck, independent scrollable controls, Startup Backlight customizer with dedicated SAVE buttons & early-boot cache sync, live AW22127 hardware brightness slider, zero-delay dispatch, configurable charging/fully-charged/low-battery/startup effects, and hardware restart recovery.

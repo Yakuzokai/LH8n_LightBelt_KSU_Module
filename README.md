@@ -24,7 +24,7 @@ The repository contains a prebuilt APK and shell scripts; it does not contain th
 ## App and module details
 
 - **Module ID:** `lh8n_lightbelt`
-- **Module version:** `1.2.2` (version code `122`)
+- **Module version:** `1.2.3` (version code `123`)
 - **App package:** `com.transsion.lightbelt`
 - **App label:** Backlight Effect
 - **APK version:** `14` (version code `34`)
