@@ -11,6 +11,7 @@ set_perm_recursive "$MODPATH" 0 0 0755 0644
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/action.sh" 0 0 0755
 set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
+set_perm "$MODPATH/01_lh8n_sysfs.sh" 0 0 0755
 
 # Install APK directly into package manager for immediate availability
 if [ -f "$MODPATH/system/priv-app/LightBelt/LightBelt.apk" ]; then

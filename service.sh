@@ -6,6 +6,14 @@ while [ "$(getprop sys.boot_completed)" != "1" ]; do
     sleep 2
 done
 
+# Ensure vendor script is mount-bound with our non-destructive thermal watchdog
+if [ -f "$MODDIR/01_lh8n_sysfs.sh" ]; then
+    if ! mount | grep -q "/vendor/bin/01_lh8n_sysfs.sh"; then
+        mount --bind "$MODDIR/01_lh8n_sysfs.sh" /vendor/bin/01_lh8n_sysfs.sh 2>/dev/null || true
+    fi
+    killall -9 01_lh8n_sysfs.sh 2>/dev/null || true
+fi
+
 # Ensure directory traversal permissions are always 0755
 chmod 0755 /sys/class/leds 2>/dev/null || true
 chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null || true
@@ -26,8 +34,8 @@ cmd notification allow_listener com.transsion.lightbelt/com.transsion.lightbelt.
 
 # Initialize AW22xxx hardware registers and output drivers
 echo 1 > /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/hwen 2>/dev/null || true
-echo 180 > /sys/class/leds/aw22xxx_led/brightness
-echo "00 00 00 00 00 00" > /sys/led/led/tran_led_cmd
+echo 8 > /sys/class/leds/aw22xxx_led/imax 2>/dev/null || true
+echo 180 > /sys/class/leds/aw22xxx_led/brightness 2>/dev/null || true
+echo "00 00 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null || true
 sleep 0.05
-echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd
-
+echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null || true
