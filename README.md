@@ -4,7 +4,7 @@ A KernelSU-style root module that packages the **Backlight Effect** application 
 
 The repository contains a prebuilt APK and shell scripts; it does not contain the Android app's source code. The module metadata describes the target as HyperOS. Device, firmware, kernel, and controller differences can affect whether the application and sysfs controls work.
 
-> **Important security notice:** `post-fs-data.sh` runs `setenforce 0` during early boot. This switches Android SELinux to permissive mode system-wide, weakening an important security boundary. Review this behavior before installing. If you do not want SELinux permissive, remove that command from `post-fs-data.sh` before packaging/installing the module. LED access or app functionality may then be limited by your device's existing policy.
+> **Security & SELinux Notice:** The early-boot scripts preserve Android SELinux Enforcing mode. When paired with `lh8n_hyperos_stability_gaming`, system apps transition out of zygote cleanly via proper `mac_permissions.xml` contexts, eliminating the need for permissive mode.
 
 ## Contents
 

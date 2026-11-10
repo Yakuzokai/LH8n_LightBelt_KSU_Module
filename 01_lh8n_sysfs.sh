@@ -4,19 +4,16 @@
 setenforce 0 2>/dev/null
 
 # Ensure directory traversal permissions are always 0755
-chmod 0755 /sys 2>/dev/null
-chmod 0755 /sys/class 2>/dev/null
-chmod 0755 /sys/class/leds 2>/dev/null
-chmod 0755 /sys/devices 2>/dev/null
-chmod 0755 /sys/devices/platform 2>/dev/null
-chmod 0755 /sys/devices/platform/11d21000.i2c 2>/dev/null
-chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2 2>/dev/null
-chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null
-chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds 2>/dev/null
-chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led 2>/dev/null
-chmod 0755 /sys/devices/platform/mtk_leds 2>/dev/null
-chmod 0755 /sys/devices/platform/mtk_leds/leds 2>/dev/null
-chmod 0755 /sys/devices/platform/mtk_leds/leds/lcd-backlight 2>/dev/null
+for d in \
+    /sys /sys/class /sys/class/leds /sys/devices /sys/devices/platform \
+    /sys/devices/platform/11d21000.i2c /sys/devices/platform/11d21000.i2c/i2c-2 \
+    /sys/devices/platform/11d21000.i2c/i2c-2/2-006a \
+    /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds \
+    /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led \
+    /sys/devices/platform/mtk_leds /sys/devices/platform/mtk_leds/leds \
+    /sys/devices/platform/mtk_leds/leds/lcd-backlight; do
+    chmod 0755 "$d" 2>/dev/null
+done
 
 find /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/ -type d -exec chmod 0755 {} + 2>/dev/null
 find /sys/devices/platform/mtk_leds/ -type d -exec chmod 0755 {} + 2>/dev/null
@@ -36,6 +33,14 @@ chmod 0666 /sys/class/leds/lcd-backlight/brightness 2>/dev/null
 chmod 0666 /sys/devices/platform/mtk_leds/leds/lcd-backlight/brightness 2>/dev/null
 find /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/ -type f -exec chmod 0666 {} + 2>/dev/null
 
+# Safety guard: lock aw22xxx_led/rgb to root:system 0640 to prevent out-of-bounds UBSAN kernel panics
+for node in /sys/class/leds/aw22xxx_led/rgb /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/rgb; do
+    if [ -e "$node" ]; then
+        chown root:system "$node" 2>/dev/null
+        chmod 0640 "$node" 2>/dev/null
+    fi
+done
+
 chcon u:object_r:sysfs:s0 /sys/devices/platform/charger/bypass_charger 2>/dev/null
 chcon u:object_r:sysfs:s0 /sys/devices/platform/charger/tran_aichg_disable_charger 2>/dev/null
 chcon u:object_r:sysfs:s0 /sys/led/led/tran_led_cmd 2>/dev/null
@@ -50,7 +55,7 @@ chcon u:object_r:shell_data_file:s0 "$CMD_FILE"
 
 # Resolve startup command from cache or settings
 STARTUP_CMD=""
-[ -f "/data/local/tmp/lh8n_startup_cmd" ] && STARTUP_CMD=$(cat /data/local/tmp/lh8n_startup_cmd 2>/dev/null)
+[ -f "/data/local/tmp/lh8n_startup_cmd" ] && IFS= read -r STARTUP_CMD < /data/local/tmp/lh8n_startup_cmd 2>/dev/null
 
 if [ -z "$STARTUP_CMD" ] || [ "$STARTUP_CMD" = "null" ]; then
     STARTUP_CMD=$(settings get global tran_led_startup_cmd 2>/dev/null)
@@ -70,19 +75,19 @@ if [ -z "$STARTUP_CMD" ] || [ "$STARTUP_CMD" = "null" ]; then
 fi
 
 MASTER_VAL=""
-[ -f "/data/local/tmp/lh8n_master" ] && MASTER_VAL=$(cat /data/local/tmp/lh8n_master 2>/dev/null)
+[ -f "/data/local/tmp/lh8n_master" ] && IFS= read -r MASTER_VAL < /data/local/tmp/lh8n_master 2>/dev/null
 [ -z "$MASTER_VAL" ] && MASTER_VAL=$(settings get global tran_led_lighting_settings 2>/dev/null)
 if [ "$MASTER_VAL" = "0" ]; then
     STARTUP_CMD="00 01 00 00 00 00"
 fi
 
 STARTUP_BRIGHTNESS=""
-[ -f "/data/local/tmp/lh8n_startup_brightness" ] && STARTUP_BRIGHTNESS=$(cat /data/local/tmp/lh8n_startup_brightness 2>/dev/null)
+[ -f "/data/local/tmp/lh8n_startup_brightness" ] && IFS= read -r STARTUP_BRIGHTNESS < /data/local/tmp/lh8n_startup_brightness 2>/dev/null
 [ -z "$STARTUP_BRIGHTNESS" ] && STARTUP_BRIGHTNESS=$(settings get global tran_led_startup_brightness 2>/dev/null)
 [ -z "$STARTUP_BRIGHTNESS" ] && STARTUP_BRIGHTNESS=70
 
 STARTUP_IMAX=""
-[ -f "/data/local/tmp/lh8n_startup_imax" ] && STARTUP_IMAX=$(cat /data/local/tmp/lh8n_startup_imax 2>/dev/null)
+[ -f "/data/local/tmp/lh8n_startup_imax" ] && IFS= read -r STARTUP_IMAX < /data/local/tmp/lh8n_startup_imax 2>/dev/null
 [ -z "$STARTUP_IMAX" ] && STARTUP_IMAX=$(settings get global tran_led_startup_imax 2>/dev/null)
 
 if [ -z "$STARTUP_IMAX" ] || [ "$STARTUP_IMAX" = "null" ]; then
@@ -107,7 +112,7 @@ echo 180 > /sys/class/leds/aw22xxx_led/brightness 2>/dev/null
 echo "00 00 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
 sleep 0.05
 
-# Trigger startup backlight effect while device is booting!
+# Trigger startup backlight effect while device is booting
 if [ -n "$STARTUP_CMD" ] && [ "$STARTUP_CMD" != "00 01 00 00 00 00" ]; then
     echo "$STARTUP_CMD" > /sys/led/led/tran_led_cmd 2>/dev/null
 else
@@ -122,10 +127,7 @@ LAST_SMART=""
 LAST_PAPER=""
 TICK_COUNT=0
 
-# Blur Configuration: Permanent Gaussian blur, Advanced Textures toggle removed
-settings put global disable_window_blurs 0 2>/dev/null || true
-settings put secure background_blur_enable 1 2>/dev/null || true
-settings put system background_blur_enable 1 2>/dev/null || true
+# Blur properties (Settings keys are applied post-boot by SysfsSettingsObserver once SettingsProvider is ready)
 setprop persist.sys.sf.disable_blurs false
 setprop persist.sysui.disableBlur false
 setprop persist.sys.background_blur_supported false
@@ -142,16 +144,18 @@ setprop persist.sys.background_blur_keyguard_disabled false
     # Keep startup backlight visible for at least 4 seconds post-boot
     sleep 4
 
-    # Determine whether plugged into charger
-    CHG_STATUS=$(cat /sys/class/power_supply/battery/status 2>/dev/null)
-    CHG_ONLINE=$(cat /sys/class/power_supply/charger/online 2>/dev/null)
+    CHG_STATUS=""
+    CHG_ONLINE=""
+    [ -r /sys/class/power_supply/battery/status ] && IFS= read -r CHG_STATUS < /sys/class/power_supply/battery/status 2>/dev/null
+    [ -r /sys/class/power_supply/charger/online ] && IFS= read -r CHG_ONLINE < /sys/class/power_supply/charger/online 2>/dev/null
 
     if [ "$CHG_ONLINE" = "1" ] || [ "$CHG_STATUS" = "Charging" ] || [ "$CHG_STATUS" = "Full" ]; then
         CHG_CMD=$(settings get global tran_led_charge_effect_cmd 2>/dev/null)
-        [ -z "$CHG_CMD" ] && CHG_CMD=$(cat /data/local/tmp/lh8n_charge_cmd 2>/dev/null)
+        [ -z "$CHG_CMD" ] && [ -r /data/local/tmp/lh8n_charge_cmd ] && IFS= read -r CHG_CMD < /data/local/tmp/lh8n_charge_cmd 2>/dev/null
         [ -z "$CHG_CMD" ] && CHG_CMD="00 02 01 00 00 00"
 
         CHG_BRIGHT=$(settings get global tran_led_charge_brightness 2>/dev/null)
+        [ -z "$CHG_BRIGHT" ] && [ -r /data/local/tmp/lh8n_charge_brightness ] && IFS= read -r CHG_BRIGHT < /data/local/tmp/lh8n_charge_brightness 2>/dev/null
         [ -z "$CHG_BRIGHT" ] && CHG_BRIGHT=70
         if [ "$CHG_BRIGHT" -le 0 ] 2>/dev/null; then
             echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
@@ -163,7 +167,6 @@ setprop persist.sys.background_blur_keyguard_disabled false
             echo "$CHG_CMD" > /sys/led/led/tran_led_cmd 2>/dev/null
         fi
     else
-        # Turn off startup effect once boot completes and user reaches lockscreen
         echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
     fi
 
@@ -212,144 +215,10 @@ setprop persist.sys.background_blur_keyguard_disabled false
     [ -n "$M_SET" ] && echo "$M_SET" > /data/local/tmp/lh8n_master && chmod 0666 /data/local/tmp/lh8n_master 2>/dev/null
 ) &
 
-# Background daemon loop
+# Runtime monitoring, Settings sync, thermal watchdog & cmd handling are performed by
+# SysfsSettingsObserver (lh8n_observer.dex) under u:r:ksu:s0 with zero init AVC spam.
+# Hold silently so Android init never respawns this non-oneshot service.
 while true; do
-    # 1. Thermal Safety Watchdog (Real hardware emergency cutoff at 70°C; do NOT pull hwen low)
-    SOC_TEMP=$(cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo 0)
-    if [ "$SOC_TEMP" -ge 70000 ]; then
-        echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
-        echo 9 > /sys/class/leds/aw22xxx_led/cfg 2>/dev/null
-    fi
-
-    # 2. Reading Mode synchronization
-    PAPER=$(settings get system screen_paper_mode_enabled 2>/dev/null)
-    [ -z "$PAPER" ] && PAPER="0"
-
-    if [ "$PAPER" != "$LAST_PAPER" ]; then
-        LAST_PAPER="$PAPER"
-        if [ "$PAPER" = "1" ]; then
-            settings put secure night_display_activated 1 2>/dev/null || true
-        else
-            settings put secure night_display_activated 0 2>/dev/null || true
-        fi
-    fi
-
-    # 3. Command file handle
-    if [ -s "$CMD_FILE" ]; then
-        CMD=$(cat "$CMD_FILE")
-        > "$CMD_FILE"
-        case "$CMD" in
-            *BYPASS*1*)
-                echo 1 > /sys/devices/platform/charger/bypass_charge
-                echo 1 > /sys/devices/platform/charger/tran_aichg_disable_charge
-                ;;
-            *BYPASS*0*)
-                echo 0 > /sys/devices/platform/charger/bypass_charge
-                echo 0 > /sys/devices/platform/charger/tran_aichg_disable_charge
-                ;;
-            *LED*0*)
-                echo 9 > /sys/class/leds/aw22xxx_led/cfg
-                echo 0 > /sys/class/leds/aw22xxx_led/effect
-                echo 0 > /sys/led/led/tran_led_cmd 2>/dev/null
-                ;;
-            *LED*1*)
-                echo 13 > /sys/class/leds/aw22xxx_led/cfg
-                echo 7 > /sys/class/leds/aw22xxx_led/effect
-                echo 1 > /sys/led/led/tran_led_cmd 2>/dev/null
-                ;;
-            *LED*2*)
-                echo 4 > /sys/class/leds/aw22xxx_led/cfg
-                echo 4 > /sys/class/leds/aw22xxx_led/effect
-                echo 2 > /sys/led/led/tran_led_cmd 2>/dev/null
-                ;;
-            *LED*3*)
-                echo 1 > /sys/class/leds/aw22xxx_led/cfg
-                echo 1 > /sys/class/leds/aw22xxx_led/effect
-                echo 3 > /sys/led/led/tran_led_cmd 2>/dev/null
-                ;;
-            *LED*4*)
-                echo 0 > /sys/class/leds/aw22xxx_led/cfg
-                echo 1 > /sys/class/leds/aw22xxx_led/effect
-                echo 4 > /sys/led/led/tran_led_cmd 2>/dev/null
-                ;;
-            *QC_TYPE*)
-                TYPE=$(echo "$CMD" | awk '{print $2}')
-                WATT=$(echo "$CMD" | awk '{print $3}')
-                am broadcast -a miui.intent.action.ACTION_QUICK_CHARGE_TYPE --ei miui.intent.extra.quick_charge_type "$TYPE" --ei miui.intent.extra.POWER_MAX "$WATT" 2>/dev/null || true
-                ;;
-        esac
-    fi
-
-    # 4. Refresh rate synchronization and periodic sysfs permission watchdog
-    TICK_COUNT=$((TICK_COUNT + 1))
-    if [ "$((TICK_COUNT % 5))" -eq 0 ]; then
-        chmod 0755 /sys/class/leds 2>/dev/null
-        chmod 0755 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null
-        chmod 0755 /sys/devices/platform/mtk_leds/leds/lcd-backlight 2>/dev/null
-        chmod 0666 /sys/class/leds/lcd-backlight/brightness 2>/dev/null
-        chmod 0666 /sys/devices/platform/mtk_leds/leds/lcd-backlight/brightness 2>/dev/null
-        chmod 0666 /sys/led/led/tran_led_cmd 2>/dev/null
-        chmod 0666 /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/tran_led_cmd 2>/dev/null
-
-        # Sync startup and power settings to cache files for next cold boot
-        S_CMD=$(settings get global tran_led_startup_cmd 2>/dev/null)
-        if [ -n "$S_CMD" ] && [ "$S_CMD" != "null" ]; then
-            echo "$S_CMD" > /data/local/tmp/lh8n_startup_cmd
-        else
-            S_CUR=$(settings get global tran_led_startup_settings 2>/dev/null)
-            case "$S_CUR" in
-                0) echo "00 03 01 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-                1) echo "00 31 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-                2) echo "00 04 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-                3) echo "00 20 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-                4) echo "00 20 03 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-                5) echo "00 01 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-            esac
-        fi
-        chmod 0666 /data/local/tmp/lh8n_startup_cmd 2>/dev/null
-
-        IMAX_CUR=$(settings get global tran_led_imax 2>/dev/null)
-        [ -n "$IMAX_CUR" ] && echo "$IMAX_CUR" > /data/local/tmp/lh8n_imax && chmod 0666 /data/local/tmp/lh8n_imax 2>/dev/null
-
-        M_CUR=$(settings get global tran_led_lighting_settings 2>/dev/null)
-        [ -n "$M_CUR" ] && echo "$M_CUR" > /data/local/tmp/lh8n_master && chmod 0666 /data/local/tmp/lh8n_master 2>/dev/null
-    fi
-
-    if [ "$TICK_COUNT" -ge 2 ]; then
-        TICK_COUNT=0
-        SMART=$(settings get system is_smart_fps 2>/dev/null)
-        USER_RR=$(settings get secure user_refresh_rate 2>/dev/null)
-        
-        if [ "$SMART" = "1" ]; then
-            if [ "$LAST_SMART" != "1" ]; then
-                settings put system min_refresh_rate 60.0 2>/dev/null || true
-                settings put system peak_refresh_rate 120.0 2>/dev/null || true
-                LAST_SMART="1"
-                LAST_RR="smart"
-            fi
-        else
-            LAST_SMART="0"
-            if [ "$USER_RR" != "$LAST_RR" ]; then
-                case "$USER_RR" in
-                    60)
-                        settings put system min_refresh_rate 60.0 2>/dev/null || true
-                        settings put system peak_refresh_rate 60.0 2>/dev/null || true
-                        LAST_RR="60"
-                        ;;
-                    90)
-                        settings put system min_refresh_rate 90.0 2>/dev/null || true
-                        settings put system peak_refresh_rate 90.0 2>/dev/null || true
-                        LAST_RR="90"
-                        ;;
-                    120)
-                        settings put system min_refresh_rate 120.0 2>/dev/null || true
-                        settings put system peak_refresh_rate 120.0 2>/dev/null || true
-                        LAST_RR="120"
-                        ;;
-                esac
-            fi
-        fi
-    fi
-
-    sleep 2.0
+    sleep 3600
 done
+

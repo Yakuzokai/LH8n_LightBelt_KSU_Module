@@ -12,6 +12,7 @@ set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/action.sh" 0 0 0755
 set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
 set_perm "$MODPATH/01_lh8n_sysfs.sh" 0 0 0755
+[ -f "$MODPATH/uninstall.sh" ] && set_perm "$MODPATH/uninstall.sh" 0 0 0755
 
 # Install APK directly into package manager for immediate availability
 if [ -f "$MODPATH/system/priv-app/LightBelt/LightBelt.apk" ]; then
@@ -35,6 +36,15 @@ chmod 0666 /sys/led/led/tran_led_cmd 2>/dev/null || true
 chmod 0666 /sys/devices/platform/mtk_leds/leds/lcd-backlight/brightness 2>/dev/null || true
 chmod 0666 /sys/class/leds/lcd-backlight/brightness 2>/dev/null || true
 chown -R system:system /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null || true
+
+# Safety guard: lock aw22xxx_led/rgb to root:system 0640 to prevent out-of-bounds UBSAN kernel panics
+for node in /sys/class/leds/aw22xxx_led/rgb /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/rgb; do
+    if [ -e "$node" ]; then
+        chown root:system "$node" 2>/dev/null || true
+        chmod 0640 "$node" 2>/dev/null || true
+    fi
+done
+
 echo 1 > /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/hwen 2>/dev/null || true
 
 # Grant Notification Listener access
