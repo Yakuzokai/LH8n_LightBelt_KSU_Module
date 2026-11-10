@@ -24,12 +24,12 @@ The repository contains a prebuilt APK and shell scripts; it does not contain th
 ## App and module details
 
 - **Module ID:** `lh8n_lightbelt`
-- **Module version:** `1.2.4` (version code `124`)
+- **Module version:** `1.3.0` (version code `130`)
 - **App package:** `com.transsion.lightbelt`
 - **App label:** Backlight Effect
 - **APK version:** `14` (version code `34`)
 - **APK Android requirement:** minimum SDK 34, which corresponds to Android 14
-- **App permissions declared in the APK:** `WRITE_SECURE_SETTINGS`, `VIBRATE`, and the app's own dynamic-receiver permission
+- **App permissions declared in the APK:** `WRITE_SECURE_SETTINGS`, `VIBRATE`, `READ_PHONE_STATE`, and the app's own dynamic-receiver permission
 - **Notification listener component used by the scripts:** `com.transsion.lightbelt/com.transsion.lightbelt.service.LBBackgroundService`
 
 The APK declares a notification-listener service and a Quick Settings tile service. The scripts request notification-listener access with Android's `cmd notification allow_listener` command. This does not guarantee that every Android/HyperOS release will accept the command or that all app features will work.

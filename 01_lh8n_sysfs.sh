@@ -76,15 +76,33 @@ if [ "$MASTER_VAL" = "0" ]; then
     STARTUP_CMD="00 01 00 00 00 00"
 fi
 
-IMAX_VAL=""
-[ -f "/data/local/tmp/lh8n_imax" ] && IMAX_VAL=$(cat /data/local/tmp/lh8n_imax 2>/dev/null)
-[ -z "$IMAX_VAL" ] && IMAX_VAL=$(settings get global tran_led_imax 2>/dev/null)
-[ -z "$IMAX_VAL" ] && IMAX_VAL=8
+STARTUP_BRIGHTNESS=""
+[ -f "/data/local/tmp/lh8n_startup_brightness" ] && STARTUP_BRIGHTNESS=$(cat /data/local/tmp/lh8n_startup_brightness 2>/dev/null)
+[ -z "$STARTUP_BRIGHTNESS" ] && STARTUP_BRIGHTNESS=$(settings get global tran_led_startup_brightness 2>/dev/null)
+[ -z "$STARTUP_BRIGHTNESS" ] && STARTUP_BRIGHTNESS=70
+
+STARTUP_IMAX=""
+[ -f "/data/local/tmp/lh8n_startup_imax" ] && STARTUP_IMAX=$(cat /data/local/tmp/lh8n_startup_imax 2>/dev/null)
+[ -z "$STARTUP_IMAX" ] && STARTUP_IMAX=$(settings get global tran_led_startup_imax 2>/dev/null)
+
+if [ -z "$STARTUP_IMAX" ] || [ "$STARTUP_IMAX" = "null" ]; then
+    if [ "$STARTUP_BRIGHTNESS" -le 0 ] 2>/dev/null; then
+        STARTUP_IMAX=0
+        STARTUP_CMD="00 01 00 00 00 00"
+    else
+        STARTUP_IMAX=$(( ((STARTUP_BRIGHTNESS - 1) * 8 + 49) / 99 ))
+        [ "$STARTUP_IMAX" -lt 0 ] && STARTUP_IMAX=0
+        [ "$STARTUP_IMAX" -gt 8 ] && STARTUP_IMAX=8
+    fi
+fi
+if [ "$STARTUP_BRIGHTNESS" -le 0 ] 2>/dev/null; then
+    STARTUP_CMD="00 01 00 00 00 00"
+fi
 
 # Initialize LED controller in awake standby state with configured current level
 echo 9 > /sys/class/leds/aw22xxx_led/cfg 2>/dev/null
 echo 1 > /sys/class/leds/aw22xxx_led/hwen 2>/dev/null
-echo "$IMAX_VAL" > /sys/class/leds/aw22xxx_led/imax 2>/dev/null
+echo "$STARTUP_IMAX" > /sys/class/leds/aw22xxx_led/imax 2>/dev/null
 echo 180 > /sys/class/leds/aw22xxx_led/brightness 2>/dev/null
 echo "00 00 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
 sleep 0.05
@@ -132,7 +150,18 @@ setprop persist.sys.background_blur_keyguard_disabled false
         CHG_CMD=$(settings get global tran_led_charge_effect_cmd 2>/dev/null)
         [ -z "$CHG_CMD" ] && CHG_CMD=$(cat /data/local/tmp/lh8n_charge_cmd 2>/dev/null)
         [ -z "$CHG_CMD" ] && CHG_CMD="00 02 01 00 00 00"
-        echo "$CHG_CMD" > /sys/led/led/tran_led_cmd 2>/dev/null
+
+        CHG_BRIGHT=$(settings get global tran_led_charge_brightness 2>/dev/null)
+        [ -z "$CHG_BRIGHT" ] && CHG_BRIGHT=70
+        if [ "$CHG_BRIGHT" -le 0 ] 2>/dev/null; then
+            echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
+        else
+            CHG_IMAX=$(( ((CHG_BRIGHT - 1) * 8 + 49) / 99 ))
+            [ "$CHG_IMAX" -lt 0 ] && CHG_IMAX=0
+            [ "$CHG_IMAX" -gt 8 ] && CHG_IMAX=8
+            echo "$CHG_IMAX" > /sys/class/leds/aw22xxx_led/imax 2>/dev/null
+            echo "$CHG_CMD" > /sys/led/led/tran_led_cmd 2>/dev/null
+        fi
     else
         # Turn off startup effect once boot completes and user reaches lockscreen
         echo "00 01 00 00 00 00" > /sys/led/led/tran_led_cmd 2>/dev/null
@@ -150,6 +179,14 @@ setprop persist.sys.background_blur_keyguard_disabled false
     [ -z "$(settings get global tran_led_charge_settings 2>/dev/null)" ] && settings put global tran_led_charge_settings 1
     [ -z "$(settings get global tran_led_low_power_settings 2>/dev/null)" ] && settings put global tran_led_low_power_settings 1
     [ -z "$(settings get global tran_led_startup_settings 2>/dev/null)" ] && settings put global tran_led_startup_settings 3
+    [ -z "$(settings get global tran_led_charge_brightness 2>/dev/null)" ] && settings put global tran_led_charge_brightness 70
+    [ -z "$(settings get global tran_led_fully_charged_brightness 2>/dev/null)" ] && settings put global tran_led_fully_charged_brightness 70
+    [ -z "$(settings get global tran_led_low_power_brightness 2>/dev/null)" ] && settings put global tran_led_low_power_brightness 70
+    [ -z "$(settings get global tran_led_startup_brightness 2>/dev/null)" ] && settings put global tran_led_startup_brightness 70
+    [ -z "$(settings get global tran_led_notification_brightness 2>/dev/null)" ] && settings put global tran_led_notification_brightness 70
+    [ -z "$(settings get global tran_led_call_brightness 2>/dev/null)" ] && settings put global tran_led_call_brightness 70
+    [ -z "$(settings get global tran_led_music_brightness 2>/dev/null)" ] && settings put global tran_led_music_brightness 70
+    [ -z "$(settings get global tran_led_test_brightness 2>/dev/null)" ] && settings put global tran_led_test_brightness 70
 
     # Update cache files so next cold boot has immediate access
     S_CMD=$(settings get global tran_led_startup_cmd 2>/dev/null)
