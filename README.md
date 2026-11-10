@@ -24,7 +24,7 @@ The repository contains a prebuilt APK and shell scripts; it does not contain th
 ## App and module details
 
 - **Module ID:** `lh8n_lightbelt`
-- **Module version:** `1.2.3` (version code `123`)
+- **Module version:** `1.2.4` (version code `124`)
 - **App package:** `com.transsion.lightbelt`
 - **App label:** Backlight Effect
 - **APK version:** `14` (version code `34`)
@@ -140,6 +140,15 @@ No build toolchain is required: the APK is already included. To package the modu
 ## Known Issues / Bugs
 
 - None currently known. (Previous Low Battery color mismatch resolved by redesigning customization screens with 14 full-palette hardware animation presets and removing non-functional userspace RGB overrides).
+
+## Release Notes (v1.2.4)
+
+### What's New
+- **Startup Cache Resolution Fix (`01_lh8n_sysfs.sh`)**: Reads `global tran_led_startup_cmd` directly before falling back to the corrected `0..5` index lookup (`0=Dreamy Illusion`, `1=Racing`, `2=Soft Wave`, `3=Breathing Pulse`, `4=Party Rhythm`, `5=Off`).
+- **Updated LightBelt APK (`v1.2.4`)**:
+  - Added explicit preview loop delays (`2500/4000/8700/2000/3000 ms`) across continuous/wave styles (`game.json`, `calling.json`, `startup.json`, `music_pure.json`, `music_party.json`).
+  - Restarts `mLottieView` cleanly per preview cycle and sets `music_party.json` playback speed to `0.5f`.
+  - Marks `CustomEffectActivity` as `android:exported="true"`.
 
 ## Release Notes (v1.2.2)
 

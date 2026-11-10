@@ -152,15 +152,20 @@ setprop persist.sys.background_blur_keyguard_disabled false
     [ -z "$(settings get global tran_led_startup_settings 2>/dev/null)" ] && settings put global tran_led_startup_settings 3
 
     # Update cache files so next cold boot has immediate access
-    S_VAL=$(settings get global tran_led_startup_settings 2>/dev/null)
-    case "$S_VAL" in
-        0) echo "00 01 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-        1) echo "00 03 01 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-        2) echo "00 31 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-        3) echo "00 04 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-        4) echo "00 20 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-        5) echo "00 20 03 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
-    esac
+    S_CMD=$(settings get global tran_led_startup_cmd 2>/dev/null)
+    if [ -n "$S_CMD" ] && [ "$S_CMD" != "null" ]; then
+        echo "$S_CMD" > /data/local/tmp/lh8n_startup_cmd
+    else
+        S_VAL=$(settings get global tran_led_startup_settings 2>/dev/null)
+        case "$S_VAL" in
+            0) echo "00 03 01 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+            1) echo "00 31 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+            2) echo "00 04 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+            3) echo "00 20 02 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+            4) echo "00 20 03 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+            5) echo "00 01 00 00 00 00" > /data/local/tmp/lh8n_startup_cmd ;;
+        esac
+    fi
     chmod 0666 /data/local/tmp/lh8n_startup_cmd 2>/dev/null
 
     IMAX_SET=$(settings get global tran_led_imax 2>/dev/null)
