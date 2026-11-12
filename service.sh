@@ -40,11 +40,11 @@ chmod 0666 /sys/devices/platform/mtk_leds/leds/lcd-backlight/brightness 2>/dev/n
 chmod 0666 /sys/class/leds/lcd-backlight/brightness 2>/dev/null || true
 chown -R system:system /sys/devices/platform/11d21000.i2c/i2c-2/2-006a 2>/dev/null || true
 
-# Safety guard: lock aw22xxx_led/rgb to root:system 0640 to prevent out-of-bounds UBSAN kernel panics
+# Safety guard: lock aw22xxx_led/rgb to root:system 0660 to allow LightBelt (system user) to set colors
 for node in /sys/class/leds/aw22xxx_led/rgb /sys/devices/platform/11d21000.i2c/i2c-2/2-006a/leds/aw22xxx_led/rgb; do
     if [ -e "$node" ]; then
         chown root:system "$node" 2>/dev/null || true
-        chmod 0640 "$node" 2>/dev/null || true
+        chmod 0660 "$node" 2>/dev/null || true
     fi
 done
 

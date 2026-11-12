@@ -1,6 +1,6 @@
 id=lh8n_lightbelt
 name=Tecno LH8n LightBelt Backlight Service
-version=1.3.0
-versionCode=130
+version=1.3.1
+versionCode=131
 author=Kagiyama
-description=Native Tecno LH8n AW22xxx Backlight LED controller app with per-event brightness control (0-100%), background telephony/audio/game listeners, simulation engine, live AW22127 hardware current regulation, HyperOS dark card UI, and early-boot cache sync.
+description=Native Tecno LH8n AW22xxx Backlight LED controller app with per-event brightness control (0-100%), live preview for all events, adaptive light/dark mode UI, background listeners, and live AW22127 hardware current regulation.
